@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Chart.js demo</title>
+        <!-- import plugin script -->
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/0.2.0/Chart.min.js"></script>
+		<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+
+    </head>
+    <body>
+		<div id="updategraph" class="form">
+			<form class="pure-form">
+				<div class="pure-u-1-4">
+					<input id="salary" class="pure-input-1" type="text" placeholder="Starting Salary">
+				</div>
+				<div class="pure-u-1-4">
+					<input id="percentage" class="pure-input-1" type="text" placeholder="% increase per year">
+				</div>
+				<div class="pure-u-1-8">
+					<input id="years" class="pure-input-1" type="text" placeholder="# of years">
+				</div>
+				<button id="update" type="submit" class="pure-button pure-button-primary">Update</button>
+			</form>
+		</div>
+
+        <div id="graph-container">
+            <!-- line chart canvas element -->
+            <canvas id="projection" width="600" height="400"></canvas>
+            <script>
+                // line chart data
+                function drawGraph(inputLabels, inputData){
+
+                    var salaryData = {
+                        labels : inputLabels,
+                        datasets : [
+                        {
+                            fillColor : "rgba(89, 195, 227, 0.6)",
+                            strokeColor : "#ACC26D",
+                            pointColor : "#fff",
+                            pointStrokeColor : "#9DB86D",
+                            data : inputData
+                        }]
+                    }
+                    var projection = document.getElementById('projection').getContext('2d');
+                    // draw line chart
+                    new Chart(projection).Line(salaryData);
+                }
+
+                labels = ["2015","2016","2017","2018","2019","2020"];
+                data = [100000,120000,140000,160000,180000,200000];
+                drawGraph(labels, data);
+            </script>
+        </div>
+
+		<div class="info">
+			<h2 id="average">Average Salary: $150,000.00</h2>
+			<h2 id="lifetime">6 Year Earnings: $900,000.00</h2>
+		</div>
+		
+    </body>
+    
+    <script type="text/javascript">
+		Number.prototype.formatMoney = function(c, d, t){
+		var n = this, 
+			c = isNaN(c = Math.abs(c)) ? 2 : c, 
+			d = d == undefined ? "." : d, 
+			t = t == undefined ? "," : t, 
+			s = n < 0 ? "-" : "", 
+			i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "", 
+			j = (j = i.length) > 3 ? j % 3 : 0;
+		   return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+		 };
+		
+        $('#updategraph').submit(function(e) {
+			 e.preventDefault();
+            $('#projection').remove();
+            $('#graph-container').append('<canvas id="projection" width="600" height="400"></canvas>');
+		
+			var numyears = parseInt($('#years').val());
+			var startsalary = parseFloat($('#salary').val());
+			var percentage = parseFloat($('#percentage').val());			
+			var years = _.range(1, numyears+1);
+			var data = Array();
+			
+			var total = 0.0;
+			var value = startsalary;
+			for(var i = 0; i < numyears; i++){
+				data.push(value);
+				total += value;
+				value = value * (1 + percentage);	
+			}
+			
+			$('#average').text("Average Salary: $" + (total/numyears).formatMoney(2));
+			$('#lifetime').text(numyears + " Year Earnings: $" + total.formatMoney(2));
+			
+			drawGraph(years, data);
+        });
+
+    </script>
+
+
+</html>
